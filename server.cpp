@@ -350,9 +350,11 @@ int register_browser(int browser_socket_fd)
     {
         if (!browser_list[i].in_use)
         {
+            pthread_mutex_lock(&browser_list_mutex);
             browser_id = i;
             browser_list[browser_id].in_use = true;
             browser_list[browser_id].socket_fd = browser_socket_fd;
+            pthread_mutex_unlock(&browser_list_mutex);
             break;
         }
     }
@@ -367,13 +369,17 @@ int register_browser(int browser_socket_fd)
         {
             if (!session_list[i].in_use)
             {
+                pthread_mutex_lock(&session_list_mutex);
                 session_id = i;
                 session_list[session_id].in_use = true;
+                pthread_mutex_unlock(&session_list_mutex);
                 break;
             }
         }
     }
+    pthread_mutex_lock(&browser_list_mutex);
     browser_list[browser_id].session_id = session_id;
+    pthread_mutex_unlock(&browser_list_mutex);
 
     sprintf(message, "%d", session_id);
     send_message(browser_socket_fd, message);
