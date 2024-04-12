@@ -327,7 +327,6 @@ void save_session(int session_id)
         }
         fclose(session_file);
         printf("Session %d saved to file. \n", session_id);
-        exit(EXIT_SUCCESS);
     }
     else
     {
