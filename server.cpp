@@ -278,12 +278,12 @@ void load_all_sessions()
         get_session_file_path(session_id, path);
 
         // check if session file exists
-        File *file = fopen(path, "r");
+        FILE *file = fopen(path, "r");
         if (file != NULL)
         {
             fclose(file);
             // Load session data
-            File *session_file = fopen(path, "rb");
+            FILE *session_file = fopen(path, "rb");
             if (session_file != NULL)
             {
                 if (fread(&session_list[session_id], sizeof(session_t), 1, session_file) != 1)
