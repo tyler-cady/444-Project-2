@@ -30,22 +30,24 @@
 #define DATA_DIR "./sessions"
 #define SESSION_PATH_LEN 128
 
-typedef struct browser_struct {
+typedef struct browser_struct
+{
     bool in_use;
     int socket_fd;
     int session_id;
 } browser_t;
 
-typedef struct session_struct {
+typedef struct session_struct
+{
     bool in_use;
     bool variables[NUM_VARIABLES];
     double values[NUM_VARIABLES];
 } session_t;
 
-static browser_t browser_list[NUM_BROWSER];                             // Stores the information of all browsers.
-static session_t session_list[NUM_SESSIONS];                            // Stores the information of all sessions.
-static pthread_mutex_t browser_list_mutex = PTHREAD_MUTEX_INITIALIZER;  // A mutex lock for the browser list.
-static pthread_mutex_t session_list_mutex = PTHREAD_MUTEX_INITIALIZER;  // A mutex lock for the session list.
+static browser_t browser_list[NUM_BROWSER];                            // Stores the information of all browsers.
+static session_t session_list[NUM_SESSIONS];                           // Stores the information of all sessions.
+static pthread_mutex_t browser_list_mutex = PTHREAD_MUTEX_INITIALIZER; // A mutex lock for the browser list.
+static pthread_mutex_t session_list_mutex = PTHREAD_MUTEX_INITIALIZER; // A mutex lock for the session list.
 
 // Returns the string format of the given session.
 // There will be always 9 digits in the output string.
@@ -94,17 +96,23 @@ void start_server(int port);
  * @param result an array to store the string format of the given session;
  *               any data already in the array will be erased
  */
-void session_to_str(int session_id, char result[]) {
+void session_to_str(int session_id, char result[])
+{
     memset(result, 0, BUFFER_LEN);
     session_t session = session_list[session_id];
 
-    for (int i = 0; i < NUM_VARIABLES; ++i) {
-        if (session.variables[i]) {
+    for (int i = 0; i < NUM_VARIABLES; ++i)
+    {
+        if (session.variables[i])
+        {
             char line[32];
 
-            if (session.values[i] < 1000) {
+            if (session.values[i] < 1000)
+            {
                 sprintf(line, "%c = %.6f\n", 'a' + i, session.values[i]);
-            } else {
+            }
+            else
+            {
                 sprintf(line, "%c = %.8e\n", 'a' + i, session.values[i]);
             }
 
@@ -119,18 +127,23 @@ void session_to_str(int session_id, char result[]) {
  * @param str the string to determine if it represents a number
  * @return a boolean that determines if the given string represents a number
  */
-bool is_str_numeric(const char str[]) {
-    if (str == NULL) {
+bool is_str_numeric(const char str[])
+{
+    if (str == NULL)
+    {
         return false;
     }
 
-    if (!(isdigit(str[0]) || (str[0] == '-') || (str[0] == '.'))) {
+    if (!(isdigit(str[0]) || (str[0] == '-') || (str[0] == '.')))
+    {
         return false;
     }
 
     int i = 1;
-    while (str[i] != '\0') {
-        if (!(isdigit(str[i]) || str[i] == '.')) {
+    while (str[i] != '\0')
+    {
+        if (!(isdigit(str[i]) || str[i] == '.'))
+        {
             return false;
         }
         i++;
@@ -147,7 +160,8 @@ bool is_str_numeric(const char str[]) {
  * @param message the message to be processed
  * @return a boolean that determines if the given message is valid
  */
-bool process_message(int session_id, const char message[]) {
+bool process_message(int session_id, const char message[])
+{
     char *token;
     int result_idx;
     double first_value;
@@ -167,16 +181,20 @@ bool process_message(int session_id, const char message[]) {
 
     // Processes the first variable/value.
     token = strtok(NULL, " ");
-    if (is_str_numeric(token)) {
+    if (is_str_numeric(token))
+    {
         first_value = strtod(token, NULL);
-    } else {
+    }
+    else
+    {
         int first_idx = token[0] - 'a';
         first_value = session_list[session_id].values[first_idx];
     }
 
     // Processes the operation symbol.
     token = strtok(NULL, " ");
-    if (token == NULL) {
+    if (token == NULL)
+    {
         session_list[session_id].variables[result_idx] = true;
         session_list[session_id].values[result_idx] = first_value;
         return true;
@@ -185,9 +203,12 @@ bool process_message(int session_id, const char message[]) {
 
     // Processes the second variable/value.
     token = strtok(NULL, " ");
-    if (is_str_numeric(token)) {
+    if (is_str_numeric(token))
+    {
         second_value = strtod(token, NULL);
-    } else {
+    }
+    else
+    {
         int second_idx = token[0] - 'a';
         second_value = session_list[session_id].values[second_idx];
     }
@@ -197,13 +218,20 @@ bool process_message(int session_id, const char message[]) {
 
     session_list[session_id].variables[result_idx] = true;
 
-    if (symbol == '+') {
+    if (symbol == '+')
+    {
         session_list[session_id].values[result_idx] = first_value + second_value;
-    } else if (symbol == '-') {
+    }
+    else if (symbol == '-')
+    {
         session_list[session_id].values[result_idx] = first_value - second_value;
-    } else if (symbol == '*') {
+    }
+    else if (symbol == '*')
+    {
         session_list[session_id].values[result_idx] = first_value * second_value;
-    } else if (symbol == '/') {
+    }
+    else if (symbol == '/')
+    {
         session_list[session_id].values[result_idx] = first_value / second_value;
     }
 
@@ -216,9 +244,12 @@ bool process_message(int session_id, const char message[]) {
  * @param session_id the session ID
  * @param message the message to be broadcasted
  */
-void broadcast(int session_id, const char message[]) {
-    for (int i = 0; i < NUM_BROWSER; ++i) {
-        if (browser_list[i].in_use && browser_list[i].session_id == session_id) {
+void broadcast(int session_id, const char message[])
+{
+    for (int i = 0; i < NUM_BROWSER; ++i)
+    {
+        if (browser_list[i].in_use && browser_list[i].session_id == session_id)
+        {
             send_message(browser_list[i].socket_fd, message);
         }
     }
@@ -230,7 +261,8 @@ void broadcast(int session_id, const char message[]) {
  * @param session_id the session ID
  * @param path the path to the session file associated with the given session ID
  */
-void get_session_file_path(int session_id, char path[]) {
+void get_session_file_path(int session_id, char path[])
+{
     sprintf(path, "%s/session%d.dat", DATA_DIR, session_id);
 }
 
@@ -238,8 +270,41 @@ void get_session_file_path(int session_id, char path[]) {
  * Loads every session from the disk one by one if it exists.
  * Use get_session_file_path() to get the file path for each session.
  */
-void load_all_sessions() {
-    // TODO
+void load_all_sessions()
+{
+    for (int session_id = 0; session_id < NUM_SESSIONS; ++session_id)
+    {
+        char path[SESSION_PATH_LEN];
+        get_session_file_path(session_id, path);
+
+        // check if session file exists
+        File *file = fopen(path, "r");
+        if (file != NULL)
+        {
+            fclose(file);
+            // Load session data
+            File *session_file = fopen(path, "rb");
+            if (session_file != NULL)
+            {
+                if (fread(&session_list[session_id], sizeof(session_t), 1, session_file) != 1)
+                {
+                    perror("Error: Session data read unsuccessful");
+                    // close file
+                    fclose(session_file);
+                    exit(EXIT_FAILURE);
+                }
+                fclose(session_file);
+                printf("Session %d loaded from file. \n", session_id);
+            }
+            else
+            {
+                perror("Error: Couldn't open file.");
+                // close file
+                fclose(session_file);
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
 }
 
 /**
@@ -248,20 +313,24 @@ void load_all_sessions() {
  *
  * @param session_id the session ID
  */
-void save_session(int session_id) {
+void save_session(int session_id)
+{
     char path[BUFFER_LEN];
     get_session_file_path(session_id, path);
-    FILE *session_file = fopen(path, "wb"); 
-    if (session_file != NULL){
-         if (fwrite(&session_list[session_id], sizeof(session_t), 1, session_file) != 1) { 
+    FILE *session_file = fopen(path, "wb");
+    if (session_file != NULL)
+    {
+        if (fwrite(&session_list[session_id], sizeof(session_t), 1, session_file) != 1)
+        {
             perror("Error: Session data write unsuccessful.");
             exit(EXIT_FAILURE);
-         }
-         fclose(session_file);
-         printf("Session %d saved to file. \n", session_id);
-         exit(EXIT_SUCCESS);
+        }
+        fclose(session_file);
+        printf("Session %d saved to file. \n", session_id);
+        exit(EXIT_SUCCESS);
     }
-    else{
+    else
+    {
         perror("Error: Couldn't open file.");
         exit(EXIT_FAILURE);
     }
@@ -274,11 +343,14 @@ void save_session(int session_id) {
  * @param browser_socket_fd the socket file descriptor of the browser connected
  * @return the ID for the browser
  */
-int register_browser(int browser_socket_fd) {
+int register_browser(int browser_socket_fd)
+{
     int browser_id;
 
-    for (int i = 0; i < NUM_BROWSER; ++i) {
-        if (!browser_list[i].in_use) {
+    for (int i = 0; i < NUM_BROWSER; ++i)
+    {
+        if (!browser_list[i].in_use)
+        {
             browser_id = i;
             browser_list[browser_id].in_use = true;
             browser_list[browser_id].socket_fd = browser_socket_fd;
@@ -290,9 +362,12 @@ int register_browser(int browser_socket_fd) {
     receive_message(browser_socket_fd, message);
 
     int session_id = strtol(message, NULL, 10);
-    if (session_id == -1) {
-        for (int i = 0; i < NUM_SESSIONS; ++i) {
-            if (!session_list[i].in_use) {
+    if (session_id == -1)
+    {
+        for (int i = 0; i < NUM_SESSIONS; ++i)
+        {
+            if (!session_list[i].in_use)
+            {
                 session_id = i;
                 session_list[session_id].in_use = true;
                 break;
@@ -314,7 +389,8 @@ int register_browser(int browser_socket_fd) {
  *
  * @param browser_socket_fd the socket file descriptor of the browser connected
  */
-void browser_handler(int browser_socket_fd) {
+void browser_handler(int browser_socket_fd)
+{
     int browser_id;
 
     browser_id = register_browser(browser_socket_fd);
@@ -324,14 +400,16 @@ void browser_handler(int browser_socket_fd) {
 
     printf("Successfully accepted Browser #%d for Session #%d.\n", browser_id, session_id);
 
-    while (true) {
+    while (true)
+    {
         char message[BUFFER_LEN];
         char response[BUFFER_LEN];
 
         receive_message(socket_fd, message);
         printf("Received message from Browser #%d for Session #%d: %s\n", browser_id, session_id, message);
 
-        if ((strcmp(message, "EXIT") == 0) || (strcmp(message, "exit") == 0)) {
+        if ((strcmp(message, "EXIT") == 0) || (strcmp(message, "exit") == 0))
+        {
             close(socket_fd);
             pthread_mutex_lock(&browser_list_mutex);
             browser_list[browser_id].in_use = false;
@@ -340,12 +418,14 @@ void browser_handler(int browser_socket_fd) {
             return;
         }
 
-        if (message[0] == '\0') {
+        if (message[0] == '\0')
+        {
             continue;
         }
 
         bool data_valid = process_message(session_id, message);
-        if (!data_valid) {
+        if (!data_valid)
+        {
             // Send the error message to the browser.
             continue;
         }
@@ -363,13 +443,15 @@ void browser_handler(int browser_socket_fd) {
  *
  * @param port the port that the server is running on
  */
-void start_server(int port) {
+void start_server(int port)
+{
     // Loads every session if there exists one on the disk.
     load_all_sessions();
 
     // Creates the socket.
     int server_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket_fd == 0) {
+    if (server_socket_fd == 0)
+    {
         perror("Socket creation failed");
         exit(EXIT_FAILURE);
     }
@@ -379,24 +461,28 @@ void start_server(int port) {
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = htonl(INADDR_ANY);
     server_address.sin_port = htons(port);
-    if (bind(server_socket_fd, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
+    if (bind(server_socket_fd, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
+    {
         perror("Socket bind failed");
         exit(EXIT_FAILURE);
     }
 
     // Listens to the socket.
-    if (listen(server_socket_fd, SOMAXCONN) < 0) {
+    if (listen(server_socket_fd, SOMAXCONN) < 0)
+    {
         perror("Socket listen failed");
         exit(EXIT_FAILURE);
     }
     printf("The server is now listening on port %d.\n", port);
 
     // Main loop to accept new browsers and creates handlers for them.
-    while(true) {
+    while (true)
+    {
         struct sockaddr_in browser_address;
         socklen_t browser_address_len = sizeof(browser_address);
-        int browser_socket_fd = accept(server_socket_fd, (struct sockaddr *) &browser_address, &browser_address_len);
-        if ((browser_socket_fd) < 0) {
+        int browser_socket_fd = accept(server_socket_fd, (struct sockaddr *)&browser_address, &browser_address_len);
+        if ((browser_socket_fd) < 0)
+        {
             perror("Socket accept failed");
             continue;
         }
@@ -416,20 +502,25 @@ void start_server(int port) {
  * @param argv the array that contains all the arguments
  * @return exit code
  */
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     int port = DEFAULT_PORT;
 
-    if (argc == 1) {
-    } else if ((argc == 3)
-               && ((strcmp(argv[1], "--port") == 0) || (strcmp(argv[1], "-p") == 0))) {
+    if (argc == 1)
+    {
+    }
+    else if ((argc == 3) && ((strcmp(argv[1], "--port") == 0) || (strcmp(argv[1], "-p") == 0)))
+    {
         port = strtol(argv[2], NULL, 10);
-
-    } else {
+    }
+    else
+    {
         puts("Invalid arguments.");
         exit(EXIT_FAILURE);
     }
 
-    if (port < 1024) {
+    if (port < 1024)
+    {
         puts("Invalid port.");
         exit(EXIT_FAILURE);
     }
