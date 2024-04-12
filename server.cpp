@@ -249,7 +249,22 @@ void load_all_sessions() {
  * @param session_id the session ID
  */
 void save_session(int session_id) {
-    // TODO
+    char path[BUFFER_LEN];
+    get_session_file_path(session_id, path);
+    FILE *session_file = fopen(path, "wb"); 
+    if (session_file != NULL){
+         if (fwrite(&session_list[session_id], sizeof(session_t), 1, session_file) != 1) { 
+            perror("Error: Session data write unsuccessful.");
+            exit(EXIT_FAILURE);
+         }
+         fclose(session_file);
+         printf("Session %d saved to file. \n", session_id);
+         exit(EXIT_SUCCESS);
+    }
+    else{
+        perror("Error: Couldn't open file.");
+        exit(EXIT_FAILURE);
+    }
 }
 
 /**
@@ -377,7 +392,7 @@ void start_server(int port) {
     printf("The server is now listening on port %d.\n", port);
 
     // Main loop to accept new browsers and creates handlers for them.
-    while (true) {
+    while(true) {
         struct sockaddr_in browser_address;
         socklen_t browser_address_len = sizeof(browser_address);
         int browser_socket_fd = accept(server_socket_fd, (struct sockaddr *) &browser_address, &browser_address_len);
