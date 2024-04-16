@@ -1,0 +1,10 @@
+Task 2 Questions:
+  Q2.1  Why do we need locks for browser_list and session_list in browser_handler()? What could happen if there is no lock?
+    t
+  Q2.2 Can we use multiprocessing instead of multithreading here? What are the differences between multiprocessing and multithreading?
+    t
+Task 3 Questions:
+  Q3.1: What are the advantages and the disadvantages of using a hashmap/dictionary over an array or a linked list? 
+    t
+  Q3.2: Summarize the changes you made to the original code to make use of hashmap/dictionary in the current code.
+    t
