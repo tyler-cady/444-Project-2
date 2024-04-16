@@ -1,6 +1,6 @@
 Task 2 Questions:
   Q2.1  Why do we need locks for browser_list and session_list in browser_handler()? What could happen if there is no lock?
-    t
+    Locks are necissary for browser_list and session_list due to them having data written to them from threads. If they were not to be locked then one runs the risk of them getting their data corrupted or threads using the wrong data, which is caused by one thread read while another thread is in the middle of a write operation.
   Q2.2 Can we use multiprocessing instead of multithreading here? What are the differences between multiprocessing and multithreading?
     t
 Task 3 Questions:
