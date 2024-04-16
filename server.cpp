@@ -421,6 +421,7 @@ void *browser_handler(void *a)
             browser_list[browser_id].in_use = false;
             pthread_mutex_unlock(&browser_list_mutex);
             printf("Browser #%d exited.\n", browser_id);
+            free(a);
             return;
         }
 
