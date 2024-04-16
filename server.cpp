@@ -493,7 +493,9 @@ void start_server(int port)
         }
 
         // Starts the handler for the new browser.
-        browser_handler(browser_socket_fd);
+        pthread_t thread;
+        pthread_create(&thread, NULL, &browser_handler, &browser_socket_fd);
+        //browser_handler(browser_socket_fd);
     }
 
     // Closes the socket.
