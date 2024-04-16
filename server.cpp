@@ -489,7 +489,7 @@ void start_server(int port)
         socklen_t browser_address_len = sizeof(browser_address);
         int *browser_socket_fd = malloc(sizeof(*browser_socket_fd));
         *browser_socket_fd = accept(server_socket_fd, (struct sockaddr *)&browser_address, &browser_address_len);
-        if ((browser_socket_fd) < 0)
+        if ((*browser_socket_fd) < 0)
         {
             perror("Socket accept failed");
             continue;
