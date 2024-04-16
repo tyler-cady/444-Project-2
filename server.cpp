@@ -423,7 +423,7 @@ void *browser_handler(void *a)
             pthread_mutex_unlock(&browser_list_mutex);
             printf("Browser #%d exited.\n", browser_id);
             free(a);
-            pthread_exit(pthread_self());
+            pthread_exit(NULL);
             //return;
         }
 
