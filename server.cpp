@@ -487,7 +487,7 @@ void start_server(int port)
     {
         struct sockaddr_in browser_address;
         socklen_t browser_address_len = sizeof(browser_address);
-        int *browser_socket_fd = malloc(sizeof(browser_socket_fd));
+        int *browser_socket_fd = malloc(sizeof(*browser_socket_fd));
         *browser_socket_fd = accept(server_socket_fd, (struct sockaddr *)&browser_address, &browser_address_len);
         if ((*browser_socket_fd) < 0)
         {
@@ -497,7 +497,7 @@ void start_server(int port)
 
         // Starts the handler for the new browser.
         pthread_t thread;
-        pthread_create(&thread, NULL, browser_handler, browser_socket_fd);
+        pthread_create(&thread, NULL, browser_handler, (void *) browser_socket_fd);
         //browser_handler(browser_socket_fd);
     }
 
