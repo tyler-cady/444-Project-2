@@ -80,7 +80,8 @@ int register_browser(int browser_socket_fd);
 // processing the message received,
 // broadcasting the update to all browsers with the same session ID,
 // and backing up the session on the disk.
-void browser_handler(int browser_socket_fd);
+// takes arg int browser_socket_fd
+void *browser_handler(void *a);
 
 // Starts the server.
 // Sets up the connection,
@@ -422,7 +423,8 @@ void *browser_handler(void *a)
             pthread_mutex_unlock(&browser_list_mutex);
             printf("Browser #%d exited.\n", browser_id);
             free(a);
-            return;
+            pthread_exit(pthread_self());
+            //return;
         }
 
         if (message[0] == '\0')
