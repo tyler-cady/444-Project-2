@@ -438,6 +438,9 @@ void browser_handler(int browser_socket_fd)
         session_to_str(session_id, response);
         broadcast(session_id, response);
 
+        // broadcast(session_id, response);
+        // tests for multithreaded browser before server multithreaded
+        
         save_session(session_id);
     }
 }
