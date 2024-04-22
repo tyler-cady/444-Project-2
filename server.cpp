@@ -187,11 +187,14 @@ bool process_message(int session_id, const char message[])
     token = strtok(data, " ");
     result_idx = token[0] - 'a';
 
-    // Processes "=".
+    // Processes "=". 
     token = strtok(NULL, " ");
+    if (token == NULL) return false;
+    if (*token != '=') return false;
 
     // Processes the first variable/value.
     token = strtok(NULL, " ");
+    if (token == NULL) return false;
     if (is_str_numeric(token))
     {
         first_value = strtod(token, NULL);
@@ -199,6 +202,7 @@ bool process_message(int session_id, const char message[])
     else
     {
         int first_idx = token[0] - 'a';
+        if (!session_list[session_id].variables[first_idx]) return false;
         first_value = session_list[session_id].values[first_idx];
     }
 
@@ -214,6 +218,7 @@ bool process_message(int session_id, const char message[])
 
     // Processes the second variable/value.
     token = strtok(NULL, " ");
+    if (token == NULL) return false;
     if (is_str_numeric(token))
     {
         second_value = strtod(token, NULL);
@@ -221,6 +226,7 @@ bool process_message(int session_id, const char message[])
     else
     {
         int second_idx = token[0] - 'a';
+        if (!session_list[session_id].variables[second_idx]) return false;
         second_value = session_list[session_id].values[second_idx];
     }
 
@@ -465,11 +471,12 @@ void *browser_handler(void *a)
         if (!data_valid)
         {
             // Send the error message to the browser.
-            continue;
+            send_message(browser_list[browser_id].socket_fd, "Invalid Input!");
         }
-
+        else {
         session_to_str(session_id, response);
         broadcast(session_id, response);
+        }
 
         // broadcast(session_id, response);
         // tests for multithreaded browser before server multithreaded
