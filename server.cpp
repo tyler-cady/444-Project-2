@@ -23,6 +23,10 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
+#include <unordered_map>
+#include <random>
+
+#define SERVER_PORT 8080
 
 #define NUM_VARIABLES 26
 #define NUM_SESSIONS 128
@@ -44,11 +48,12 @@ typedef struct session_struct
     double values[NUM_VARIABLES];
 } session_t;
 
+std :: unordered_map<int, session_t> session_map;
 static browser_t browser_list[NUM_BROWSER];                            // Stores the information of all browsers.
 static session_t session_list[NUM_SESSIONS];                           // Stores the information of all sessions.
 static pthread_mutex_t browser_list_mutex = PTHREAD_MUTEX_INITIALIZER; // A mutex lock for the browser list.
-static pthread_mutex_t session_list_mutex = PTHREAD_MUTEX_INITIALIZER; // A mutex lock for the session list.
-
+//static pthread_mutex_t session_list_mutex = PTHREAD_MUTEX_INITIALIZER; // A mutex lock for the session list.
+static pthread_mutex_t session_map_mutex = PTHREAD_MUTEX_INITIALIZER;
 // Returns the string format of the given session.
 // There will be always 9 digits in the output string.
 void session_to_str(int session_id, char result[]);
@@ -65,6 +70,9 @@ void broadcast(int session_id, const char message[]);
 // Gets the path for the given session.
 void get_session_file_path(int session_id, char path[]);
 
+session_t& get_session(int session_id);
+void remove_session(int session_id);
+
 // Loads every session from the disk one by one if it exists.
 void load_all_sessions();
 
@@ -76,6 +84,8 @@ void save_session(int session_id);
 // through the interaction with it.
 int register_browser(int browser_socket_fd);
 
+
+int generate_session_id();
 // Handles the given browser by listening to it,
 // processing the message received,
 // broadcasting the update to all browsers with the same session ID,
@@ -273,8 +283,9 @@ void get_session_file_path(int session_id, char path[])
  */
 void load_all_sessions()
 {
-    for (int session_id = 0; session_id < NUM_SESSIONS; ++session_id)
+    for (auto& pair : session_map)
     {
+        int session_id = pair.first;
         char path[SESSION_PATH_LEN];
         get_session_file_path(session_id, path);
 
@@ -321,7 +332,8 @@ void save_session(int session_id)
     FILE *session_file = fopen(path, "wb");
     if (session_file != NULL)
     {
-        if (fwrite(&session_list[session_id], sizeof(session_t), 1, session_file) != 1)
+        session_t& session = get_session(session_id);
+        if (fwrite(&session, sizeof(session_t), 1, session_file) != 1)
         {
             perror("Error: Session data write unsuccessful.");
             exit(EXIT_FAILURE);
@@ -336,6 +348,13 @@ void save_session(int session_id)
     }
 }
 
+session_t& get_session(int session_id){
+    return session_map[session_id];
+}
+
+void remove_session (int session_id){
+    session_map.erase(session_id);
+}
 /**
  * Assigns a browser ID to the new browser.
  * Determines the correct session ID for the new browser through the interaction with it.
@@ -370,10 +389,10 @@ int register_browser(int browser_socket_fd)
         {
             if (!session_list[i].in_use)
             {
-                pthread_mutex_lock(&session_list_mutex);
-                session_id = i;
+                pthread_mutex_lock(&session_map_mutex);
+                session_id = generate_session_id();
                 session_list[session_id].in_use = true;
-                pthread_mutex_unlock(&session_list_mutex);
+                pthread_mutex_unlock(&session_map_mutex);
                 break;
             }
         }
@@ -388,6 +407,16 @@ int register_browser(int browser_socket_fd)
     return browser_id;
 }
 
+int generate_session_id() {
+    std::random_device rd; 
+    std:: mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, NUM_SESSIONS);
+    int session_id;
+    do {
+        session_id = dis(gen);
+    } while (session_map.find(session_id) != session_map.end());
+    return session_id;
+}
 /**
  * Handles the given browser by listening to it, processing the message received,
  * broadcasting the update to all browsers with the same session ID, and backing up
@@ -449,7 +478,6 @@ void *browser_handler(void *a)
     }
     free(a);
 }
-
 /**
  * Starts the server. Sets up the connection, keeps accepting new browsers,
  * and creates handlers for them.
