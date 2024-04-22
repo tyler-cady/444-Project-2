@@ -48,7 +48,7 @@ void register_server();
 
 // Listens to the server.
 // Keeps receiving and printing the messages from the server.
-void server_listener();
+void *server_listener(void *a);
 
 // Starts the browser.
 // Sets up the connection, start the listener thread,
@@ -123,11 +123,16 @@ void register_server() {
 /**
  * Listens to the server; keeps receiving and printing the messages from the server in a while loop
  * if the browser is on.
+ * @param a broswer_on 
  */
-void server_listener() {
-    char message[BUFFER_LEN];
-    receive_message(server_socket_fd, message);
-    puts(message);
+ 
+void *server_listener(void *a) {
+    bool browser_on = (bool *)a; 
+    while (browser_on) {
+        char message[BUFFER_LEN];
+        receive_message(server_socket_fd, message);
+        puts(message);
+        }
 }
 
 /**
@@ -167,12 +172,15 @@ void start_browser(const char host_ip[], int port) {
     // Saves the session ID to the cookie on the disk.
     save_cookie();
 
+    // Creates thread for server_listener
+    pthread_t slistener;
+    pthread_create(&slistener, NULL, server_listener, (void *) browser_on);
+
     // Main loop to read in the user's input and send it out.
     while (browser_on) {
         char message[BUFFER_LEN];
         read_user_input(message);
         send_message(server_socket_fd, message);
-        server_listener();
     }
 
     // Closes the socket.

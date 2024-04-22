@@ -442,6 +442,9 @@ void *browser_handler(void *a)
         session_to_str(session_id, response);
         broadcast(session_id, response);
 
+        // broadcast(session_id, response);
+        // tests for multithreaded browser before server multithreaded
+        
         save_session(session_id);
     }
     free(a);
