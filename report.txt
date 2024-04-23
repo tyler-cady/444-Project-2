@@ -5,6 +5,6 @@ Task 2 Questions:
     No, we are not able to use multiprocessing here because we want each thread to share memory so that they may communicate. Multithreading allows us to create multiple processes with shared data. Multiprocessing allows us to create multiple processes which do not share data.
 Task 3 Questions:
   Q3.1: What are the advantages and the disadvantages of using a hashmap/dictionary over an array or a linked list? 
-    t
+    The advantages of using a hashmap include having a search time of O(1) while being able to have a varying amount of elements, where as arrays have a search time of O(n) or O(log(n)) while having a fixed number of elements and linked lists have a search time of O(n) while able to have a varying amount of elements. The disadvantages include the possibility of search, insert, and delete time could take up to O(n) which would result in a time limit exceeded error.
   Q3.2: Summarize the changes you made to the original code to make use of hashmap/dictionary in the current code.
     t
