@@ -50,7 +50,7 @@ typedef struct session_struct
 
 std :: unordered_map<int, session_t> session_map;
 static browser_t browser_list[NUM_BROWSER];                            // Stores the information of all browsers.
-static session_t session_list[NUM_SESSIONS];                           // Stores the information of all sessions.
+//static session_t session_list[NUM_SESSIONS];                           // Stores the information of all sessions.
 static pthread_mutex_t browser_list_mutex = PTHREAD_MUTEX_INITIALIZER; // A mutex lock for the browser list.
 //static pthread_mutex_t session_list_mutex = PTHREAD_MUTEX_INITIALIZER; // A mutex lock for the session list.
 static pthread_mutex_t session_map_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -110,7 +110,7 @@ void start_server(int port);
 void session_to_str(int session_id, char result[])
 {
     memset(result, 0, BUFFER_LEN);
-    session_t session = session_list[session_id];
+    session_t session = session_map[session_id];
 
     for (int i = 0; i < NUM_VARIABLES; ++i)
     {
@@ -199,15 +199,15 @@ bool process_message(int session_id, const char message[])
     else
     {
         int first_idx = token[0] - 'a';
-        first_value = session_list[session_id].values[first_idx];
+        first_value = session_map[session_id].values[first_idx];
     }
 
     // Processes the operation symbol.
     token = strtok(NULL, " ");
     if (token == NULL)
     {
-        session_list[session_id].variables[result_idx] = true;
-        session_list[session_id].values[result_idx] = first_value;
+        session_map[session_id].variables[result_idx] = true;
+        session_map[session_id].values[result_idx] = first_value;
         return true;
     }
     symbol = token[0];
@@ -221,29 +221,29 @@ bool process_message(int session_id, const char message[])
     else
     {
         int second_idx = token[0] - 'a';
-        second_value = session_list[session_id].values[second_idx];
+        second_value = session_map[session_id].values[second_idx];
     }
 
     // No data should be left over thereafter.
     token = strtok(NULL, " ");
 
-    session_list[session_id].variables[result_idx] = true;
+    session_map[session_id].variables[result_idx] = true;
 
     if (symbol == '+')
     {
-        session_list[session_id].values[result_idx] = first_value + second_value;
+        session_map[session_id].values[result_idx] = first_value + second_value;
     }
     else if (symbol == '-')
     {
-        session_list[session_id].values[result_idx] = first_value - second_value;
+        session_map[session_id].values[result_idx] = first_value - second_value;
     }
     else if (symbol == '*')
     {
-        session_list[session_id].values[result_idx] = first_value * second_value;
+        session_map[session_id].values[result_idx] = first_value * second_value;
     }
     else if (symbol == '/')
     {
-        session_list[session_id].values[result_idx] = first_value / second_value;
+        session_map[session_id].values[result_idx] = first_value / second_value;
     }
 
     return true;
@@ -298,7 +298,7 @@ void load_all_sessions()
             FILE *session_file = fopen(path, "rb");
             if (session_file != NULL)
             {
-                if (fread(&session_list[session_id], sizeof(session_t), 1, session_file) != 1)
+                if (fread(&session_map[session_id], sizeof(session_t), 1, session_file) != 1)
                 {
                     perror("Error: Session data read unsuccessful");
                     // close file
@@ -387,11 +387,11 @@ int register_browser(int browser_socket_fd)
     {
         for (int i = 0; i < NUM_SESSIONS; ++i)
         {
-            if (!session_list[i].in_use)
+            if (!session_map[i].in_use)
             {
                 pthread_mutex_lock(&session_map_mutex);
                 session_id = generate_session_id();
-                session_list[session_id].in_use = true;
+                session_map[session_id].in_use = true;
                 pthread_mutex_unlock(&session_map_mutex);
                 break;
             }
