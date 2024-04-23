@@ -7,8 +7,8 @@ Task 3 Questions:
   Q3.1: What are the advantages and the disadvantages of using a hashmap/dictionary over an array or a linked list? 
     The advantages of using a hashmap include having a search time of O(1) while being able to have a varying amount of elements, where as arrays have a search time of O(n) or O(log(n)) while having a fixed number of elements and linked lists have a search time of O(n) while able to have a varying amount of elements. The disadvantages include the possibility of search, insert, and delete time could take up to O(n) which would result in a time limit exceeded error.
   Q3.2: Summarize the changes you made to the original code to make use of hashmap/dictionary in the current code.
-  The changes made to the original code to utilize a hashmap/dictionary (clients) are:
-  1. Created a dictionary named clients to store connected clients. This dictionary maps each client socket to its corresponding client address.
-  2. When a client connects, its socket and address are added to the clients dictionary.
-  3. When a client disconnects, its socket is removed from the clients dictionary.
-  These changes allow for easy management of connected clients, facilitating broadcasting messages to all clients except the sender. Additionally, the server can keep track of connected     clients' information for monitoring and management purposes.
+     The changes made to the original code to utilize a hashmap/dictionary (clients) are:
+		1. Created a dictionary named clients to store connected clients. This dictionary maps each client socket to its corresponding client address.
+		2. When a client connects, its socket and address are added to the clients dictionary.
+		3. When a client disconnects, its socket is removed from the clients dictionary.
+	These changes allow for easy management of connected clients, facilitating broadcasting messages to all clients except the sender. Additionally, the server can keep track of connected     clients' information for monitoring and management purposes.
