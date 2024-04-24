@@ -7,8 +7,16 @@ Task 3 Questions:
   Q3.1: What are the advantages and the disadvantages of using a hashmap/dictionary over an array or a linked list? 
     The advantages of using a hashmap include having a search time of O(1) while being able to have a varying amount of elements, where as arrays have a search time of O(n) or O(log(n)) while having a fixed number of elements and linked lists have a search time of O(n) while able to have a varying amount of elements. The disadvantages include the possibility of search, insert, and delete time could take up to O(n) which would result in a time limit exceeded error.
   Q3.2: Summarize the changes you made to the original code to make use of hashmap/dictionary in the current code.
-     The changes made to the original code to utilize a hashmap/dictionary (clients) are:
-		1. Created a dictionary named clients to store connected clients. This dictionary maps each client socket to its corresponding client address.
-		2. When a client connects, its socket and address are added to the clients dictionary.
-		3. When a client disconnects, its socket is removed from the clients dictionary.
-	These changes allow for easy management of connected clients, facilitating broadcasting messages to all clients except the sender. Additionally, the server can keep track of connected     clients' information for monitoring and management purposes.
+    To integrate hashmap/dictionary into the current code, the session_list array has been replaced with a std::unordered_map<int, session_t> named session_map. Here's a summary of the changes made:
+
+Data Structure Change:
+Replaced the session_list array with session_map, which maps session IDs to session data structures.
+Functions Updated:
+load_all_sessions() and save_session(int session_id) have been updated to use session_map instead of iterating over an array.
+get_session(int session_id) and remove_session(int session_id) have been added to provide access to sessions in session_map.
+generate_session_id() now generates unique session IDs by checking if the ID already exists in session_map.
+Functions that interact with sessions (session_to_str(), process_message(), broadcast(), start_server(), and browser_handler()) now use session_map for session management.
+Mutexes:
+session_map_mutex has been added to protect concurrent access to session_map.
+Mutex locks/unlocks have been updated accordingly in functions that interact with session_map.
+These changes allow for efficient session management using a hashmap/dictionary data structure, providing faster session lookup and insertion operations compared to using an array. Additionally, mutexes ensure thread safety when multiple threads access session_map concurrently.
